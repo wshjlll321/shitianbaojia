@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0c1557;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a2236;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bg)" rx="16"/>
+  <!-- Canister body -->
+  <rect x="265" y="130" width="70" height="120" fill="#334155" rx="10" stroke="#64748b" stroke-width="1.5"/>
+  <!-- Top cap with deploy mechanism -->
+  <rect x="270" y="122" width="60" height="14" fill="#475569" rx="4" stroke="#94a3b8" stroke-width="1"/>
+  <circle cx="300" cy="129" r="5" fill="#ef4444"/>
+  <!-- Deploy spring lines -->
+  <path d="M 280 250 Q 260 290 220 310" fill="none" stroke="#f97316" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.6"/>
+  <path d="M 300 250 Q 300 295 300 320" fill="none" stroke="#f97316" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.6"/>
+  <path d="M 320 250 Q 340 290 380 310" fill="none" stroke="#f97316" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.6"/>
+  <!-- Parachute canopy (deployed hint) -->
+  <path d="M 200 310 Q 250 270 300 280 Q 350 270 400 310" fill="none" stroke="#f97316" stroke-width="2" opacity="0.4"/>
+  <path d="M 210 320 Q 260 285 300 292 Q 340 285 390 320" fill="#f97316" opacity="0.1"/>
+  <!-- Status indicator -->
+  <rect x="280" y="175" width="40" height="20" fill="#1e293b" rx="3"/>
+  <text x="300" y="189" text-anchor="middle" fill="#22c55e" font-size="8" font-weight="700">ARMED</text>
+  <!-- Release button -->
+  <circle cx="300" cy="225" r="10" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="2"/>
+  <circle cx="300" cy="225" r="4" fill="#ef4444"/>
+  <!-- Label -->
+  <text x="300" y="355" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="13" font-weight="700" letter-spacing="2">PRS-280</text>
+  <text x="300" y="375" text-anchor="middle" fill="#ef4444" font-family="Arial" font-size="10" letter-spacing="2">AUTO PARACHUTE</text>
+</svg>

@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ========== 产品管理 ==========
+
+model Product {
+  id       String @id @default(cuid())
+  model    String @unique
+  nameZh   String
+  nameEn   String
+  nameTh   String @default("")
+  category String // drone | accessory
+
+  imageUrl String @default("")
+
+  // 核心卖点 (JSON Array strings)
+  featuresZh String @default("[]")
+  featuresEn String @default("[]")
+  featuresTh String @default("[]")
+
+  // 技术参数 (JSON Object strings)
+  specsZh String @default("{}")
+  specsEn String @default("{}")
+  specsTh String @default("{}")
+
+  // 基础价格体系
+  msrp     Float @default(0)
+  exwPrice Float @default(0)
+  fobPrice Float @default(0)
+
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  skus        SKU[]
+  quoteItems  QuoteItem[]
+  accessories ProductAccessory[] @relation("MainProduct")
+  accessoryOf ProductAccessory[] @relation("Accessory")
+}
+
+model SKU {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  name      String
+  nameEn    String @default("")
+  nameTh    String @default("")
+  labelZh   String @default("")
+  labelEn   String @default("")
+  sku       String @unique
+  price     Float
+  descZh    String @default("")
+  descEn    String @default("")
+  descTh    String @default("")
+  // 该版本包含内容（给客户展示，JSON Array strings）
+  includesZh String @default("[]")
+  includesEn String @default("[]")
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quoteItems QuoteItem[]
+}
+
+model ProductAccessory {
+  id            String  @id @default(cuid())
+  mainProductId String
+  mainProduct   Product @relation("MainProduct", fields: [mainProductId], references: [id], onDelete: Cascade)
+  accessoryId   String
+  accessory     Product @relation("Accessory", fields: [accessoryId], references: [id], onDelete: Cascade)
+  isRecommended Boolean @default(false)
+
+  @@unique([mainProductId, accessoryId])
+}
+
+// ========== 用户/业务员 ==========
+
+model User {
+  id       String @id @default(cuid())
+  // 登录账号（由管理员维护，不依赖邮箱）
+  username String? @unique
+  // 邮箱改为可选：兼容历史数据/可作为联系方式
+  email    String? @unique
+  password String
+
+  nameZh    String
+  nameEn    String  @default("")
+  phone     String  @default("")
+  wechatQr  String  @default("")
+  avatarUrl String  @default("")
+  role      String  @default("sales") // admin | sales
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quotes      Quote[]
+  inviteCodes InviteCode[]
+}
+
+// ========== 报价单 ==========
+
+model Quote {
+  id          String @id @default(cuid())
+  quoteNumber String @unique
+
+  // 客户信息
+  clientName    String
+  clientContact String @default("")
+  clientEmail   String @default("")
+
+  // 报价元信息
+  titleZh       String
+  titleEn       String   @default("")
+  titleTh       String   @default("")
+  quoteDate     DateTime @default(now())
+  validUntil    DateTime
+  currency      String   @default("CNY")
+  deliveryTerms String   @default("FOB Qingdao")
+
+  // 商务条款
+  warrantyZh     String @default("整机质保1年")
+  warrantyEn     String @default("1-year full warranty")
+  paymentTermsZh String @default("预付70%，发货前付清30%")
+  paymentTermsEn String @default("70% advance, 30% before shipment")
+  deliveryTimeZh String @default("合同签订后45个工作日内")
+  deliveryTimeEn String @default("Within 45 business days after contract signed")
+  trainingZh     String @default("含5天免费操作培训")
+  trainingEn     String @default("5-day free operation training included")
+  // 动态商务条款（JSON Array），用于每个报价单自定义增删/排序/展示
+  // 结构示例：[{ key:"warranty", labelZh:"质保", labelEn:"Warranty", valueZh:"...", valueEn:"...", enabled:true, order:10 }]
+  termsJson      String @default("[]")
+
+  // 价格
+  subtotal   Float @default(0)
+  discount   Float @default(0) // 折扣百分比 0-100
+  totalPrice Float @default(0)
+
+  // 分享与安全
+  // 新：仅存 hash，不存明文 token（URL 中携带明文，库中只存 hash）
+  shareTokenHash String?  @unique
+  // 旧：兼容历史数据（逐步淘汰）
+  shareToken     String?  @unique
+  tokenExpiresAt DateTime
+
+  // 状态: draft | sent | viewed | expired（历史数据可能含 converted，应用层按 viewed 展示）
+  status String @default("draft")
+
+  salesId String
+  sales   User   @relation(fields: [salesId], references: [id])
+
+  items        QuoteItem[]
+  trackingLogs TrackingLog[]
+  inviteCode   InviteCode?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuoteItem {
+  id        String  @id @default(cuid())
+  quoteId   String
+  quote     Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  skuId     String?
+  sku       SKU?    @relation(fields: [skuId], references: [id])
+  skuName   String  @default("")
+
+  nameZh     String
+  nameEn     String  @default("")
+  nameTh     String  @default("")
+
+  // ===== 快照（生成报价当时的产品/配件信息，避免后续改动影响历史报价）=====
+  snapshotModel      String @default("")
+  snapshotImageUrl   String @default("")
+  snapshotFeaturesZh String @default("[]")
+  snapshotFeaturesEn String @default("[]")
+  snapshotSpecsZh    String @default("{}")
+  snapshotSpecsEn    String @default("{}")
+  snapshotSkuIncludesZh String @default("[]")
+  snapshotSkuIncludesEn String @default("[]")
+
+  unitPrice  Float
+  quantity   Int     @default(1)
+  totalPrice Float
+  sortOrder  Int     @default(0)
+  isMainItem Boolean @default(false)
+  remark     String  @default("")
+
+  createdAt DateTime @default(now())
+}
+
+// ========== 客户邀请码（一次性自助报价）==========
+
+model InviteCode {
+  id   String @id @default(cuid())
+  code String @unique // 6-8 位短码（客户访问 /i/<code>）
+
+  // 后台预设的客户和报价参数（客户提交时无需再填）
+  clientName    String
+  clientContact String  @default("")
+  clientEmail   String  @default("")
+  currency      String  @default("USD")
+  deliveryTerms String  @default("FOB Qingdao")
+  validDays     Int     @default(30) // 报价单生成后的有效天数
+  discount      Float   @default(0)  // 折扣百分比 0-100
+  remark        String  @default("") // 备注（仅后台可见）
+
+  // 状态: pending | used | expired | revoked
+  status    String   @default("pending")
+  expiresAt DateTime // 邀请码本身的过期时间
+  usedAt    DateTime?
+
+  // ===== AI 助手会话 =====
+  aiSessionId String? // 阿里百炼 session_id，跨刷新维持上下文
+  aiMessages  String  @default("[]") // JSON 数组：[{ role, content, ts }]
+
+  // 关联使用产生的报价单
+  quoteId String? @unique
+  quote   Quote?  @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+
+  // 后台创建人
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== 数据追踪 ==========
+
+model TrackingLog {
+  id      String @id @default(cuid())
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  event     String // view | download_pdf | click_contact
+  visitorIp String @default("")
+  userAgent String @default("")
+  duration  Int    @default(0)
+  metadata  String @default("{}")
+
+  createdAt DateTime @default(now())
+}
+
+// ========== 全局配置 ==========
+
+model SystemConfig {
+  key       String   @id
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
