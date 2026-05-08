@@ -47,7 +47,103 @@ type Invite = {
   validDays: number;
 };
 
-const STEP_LABELS = ["选择机型", "选择配置", "选择配件", "确认提交"];
+
+const DICT = {
+  zh: {
+    langToggle: "EN",
+    pageTitlePrefix: "报价 · ",
+    eyebrow: "QUOTATION FOR",
+    step0: "选择机型",
+    step1: "选择配置",
+    step2: "选择配件",
+    step3: "确认提交",
+    step0Title: "选择无人机机型",
+    step0Desc: "点击卡片选择您需要的机型",
+    step1Title: "选择配置版本",
+    step1DescSuffix: " —— 不同版本配置和价格不同",
+    step2Title: "选配配件",
+    step2Desc: "可多选；如不需要直接点\"{t.btnNext}\"",
+    step3Title: "确认报价信息",
+    step3Desc: "{t.step3Desc}",
+    errNoDrone: "请选择无人机",
+    errNoSku: "请选择配置版本",
+    errIncomplete: "信息不完整，请返回检查",
+    submitFail: "提交失败",
+    networkErr: "网络错误",
+    defaultTag: "默认",
+    recommendedTag: "推荐",
+    includesMore: (n) => `…等 ${n} 项`,
+    btnRemove: "移除",
+    btnAdd: "添加",
+    accSkuLabel: "配置版本",
+    reviewClientTitle: "客户信息",
+    reviewClientRef: "客户",
+    reviewContact: "联系人",
+    reviewEmail: "邮箱",
+    reviewTermsTitle: "报价参数",
+    reviewCurrency: "币种",
+    reviewDelivery: "贸易条款",
+    reviewValid: "有效期",
+    reviewValidDays: " 天",
+    reviewSelectionTitle: "您的选择",
+    reviewNoAcc: "未选配件",
+    reviewSubtotal: "小计",
+    reviewDiscount: (d) => `专属折扣 (${d}%)`,
+    reviewTotal: "含税总金额",
+    btnPrev: "{t.btnPrev}",
+    btnNext: "{t.btnNext}",
+    btnSubmitLoad: "提交中...",
+    btnSubmit: "确认并生成报价单",
+    aiGreeting: "您好 {name}！我是您的 AI 选购助手。如对机型、配置或配件不熟悉，可以随时问我，例如使用场景、载重需求、续航要求等，我会帮您挑选最合适的方案。"
+  },
+  en: {
+    langToggle: "中文",
+    pageTitlePrefix: "Quote · ",
+    eyebrow: "QUOTATION FOR",
+    step0: "Select Model",
+    step1: "Select Configuration",
+    step2: "Select Accessories",
+    step3: "Review & Submit",
+    step0Title: "Select Drone Model",
+    step0Desc: "Click a card to select the model you need",
+    step1Title: "Select Configuration Version",
+    step1DescSuffix: " — Different versions have different configurations and prices",
+    step2Title: "Select Accessories",
+    step2Desc: "Multiple selection allowed; click 'Next' if not needed",
+    step3Title: "Review Quotation Info",
+    step3Desc: "A formal quotation will be generated upon submission. This invite code cannot be reused.",
+    errNoDrone: "Please select a drone",
+    errNoSku: "Please select a configuration version",
+    errIncomplete: "Incomplete information, please go back and check",
+    submitFail: "Submission failed",
+    networkErr: "Network error",
+    defaultTag: "Default",
+    recommendedTag: "Recommended",
+    includesMore: (n) => `...and ${n} more items`,
+    btnRemove: "Remove",
+    btnAdd: "Add",
+    accSkuLabel: "Version",
+    reviewClientTitle: "Client Info",
+    reviewClientRef: "Client",
+    reviewContact: "Contact",
+    reviewEmail: "Email",
+    reviewTermsTitle: "Quotation Terms",
+    reviewCurrency: "Currency",
+    reviewDelivery: "Incoterms",
+    reviewValid: "Valid Until",
+    reviewValidDays: " Days",
+    reviewSelectionTitle: "Your Selection",
+    reviewNoAcc: "No accessories selected",
+    reviewSubtotal: "Subtotal",
+    reviewDiscount: (d) => `Special Discount (${d}%)`,
+    reviewTotal: "GRAND TOTAL (INCL. TAX)",
+    btnPrev: "Previous",
+    btnNext: "Next",
+    btnSubmitLoad: "Submitting...",
+    btnSubmit: "Confirm & Generate Quotation",
+    aiGreeting: "Hello {name}! I am your AI purchasing assistant. If you are unfamiliar with the models, configurations, or accessories, feel free to ask me about usage scenarios, payload requirements, endurance, etc., and I will help you choose the best solution."
+  }
+};
 
 function parseStringArray(s: string | null | undefined): string[] {
   if (!s) return [];
@@ -74,8 +170,14 @@ export default function CustomerQuoteBuilder({
     drones[0]?.skus.find((s) => s.isDefault)?.id || drones[0]?.skus[0]?.id || "",
   );
   const [accs, setAccs] = useState<{ id: string; qty: number; skuId?: string }[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [locale, setLocale] = useState<"zh" | "en">("zh");
+
+  const t = DICT[locale];
+  const STEP_LABELS = [t.step0, t.step1, t.step2, t.step3];
+  const L = (zh: string | null | undefined, en: string | null | undefined) => (locale === 'en' ? en || zh : zh) || '';
 
   const drone = drones.find((d) => d.id === droneId);
   const sku = drone?.skus.find((s) => s.id === skuId);
@@ -138,12 +240,12 @@ export default function CustomerQuoteBuilder({
   const goNext = () => {
     setErr(null);
     if (step === 0) {
-      if (!droneId) return setErr("请选择无人机");
+      if (!droneId) return setErr(t.errNoDrone);
       setStep(1);
       return;
     }
     if (step === 1) {
-      if (!skuId) return setErr("请选择配置版本");
+      if (!skuId) return setErr(t.errNoSku);
       setStep(hasAccessories ? 2 : 3);
       return;
     }
@@ -163,7 +265,7 @@ export default function CustomerQuoteBuilder({
 
   const submit = async () => {
     if (!droneId || !skuId) {
-      setErr("信息不完整，请返回检查");
+      setErr(t.errIncomplete);
       return;
     }
     setErr(null);
@@ -180,13 +282,13 @@ export default function CustomerQuoteBuilder({
       });
       const data = await res.json();
       if (data.success && data.shareToken) {
-        window.location.href = `/zh/q/${data.shareToken}`;
+        window.location.href = `/${locale}/q/${data.shareToken}`;
       } else {
-        setErr(data.error || "提交失败");
+        setErr(data.error || t.submitFail);
       }
     } catch (e) {
       console.error(e);
-      setErr("网络错误");
+      setErr(t.networkErr);
     } finally {
       setLoading(false);
     }
@@ -198,20 +300,29 @@ export default function CustomerQuoteBuilder({
     !hasAccessories && step === 3 ? 2 : !hasAccessories && step === 1 ? 1 : step;
 
   return (
-    <html lang="zh">
+    <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#f5f5f2" />
-        <title>报价 · {invite.clientName}</title>
+        <title>{t.pageTitlePrefix}{invite.clientName}</title>
         <style>{styles}</style>
       </head>
       <body>
         {/* 顶部 */}
+        
         <header className="cq-header">
+          <button
+            type="button"
+            className="lang-switch"
+            onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
+          >
+            {t.langToggle}
+          </button>
+
           <div className="cq-header-inner">
             <div className="cq-brand">
-              <div className="cq-brand-eyebrow">QUOTATION FOR</div>
+              <div className="cq-brand-eyebrow">{t.eyebrow}</div>
               <div className="cq-brand-name">{invite.clientName}</div>
             </div>
             <div className="cq-step-counter">
@@ -245,8 +356,8 @@ export default function CustomerQuoteBuilder({
           {/* ─── Step 0: 选择机型 ─── */}
           {step === 0 && (
             <section className="cq-step-content">
-              <h2 className="cq-step-title">选择无人机机型</h2>
-              <p className="cq-step-desc">点击卡片选择您需要的机型</p>
+              <h2 className="cq-step-title">{t.step0Title}</h2>
+              <p className="cq-step-desc">{t.step0Desc}</p>
               <div className="cq-grid">
                 {drones.map((d) => {
                   const active = d.id === droneId;
@@ -260,12 +371,12 @@ export default function CustomerQuoteBuilder({
                       <div className="cq-drone-image">
                         {d.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={d.imageUrl} alt={d.nameZh} />
+                          <img src={d.imageUrl} alt={L(d.nameZh, d.nameEn)} />
                         ) : (
                           <span className="cq-img-fallback">✈</span>
                         )}
                       </div>
-                      <div className="cq-drone-name">{d.nameZh}</div>
+                      <div className="cq-drone-name">{L(d.nameZh, d.nameEn)}</div>
                       <div className="cq-drone-model">{d.model}</div>
                       {active && <div className="cq-card-check">✓</div>}
                     </button>
@@ -278,14 +389,14 @@ export default function CustomerQuoteBuilder({
           {/* ─── Step 1: 选择 SKU ─── */}
           {step === 1 && drone && (
             <section className="cq-step-content">
-              <h2 className="cq-step-title">选择配置版本</h2>
+              <h2 className="cq-step-title">{t.step1Title}</h2>
               <p className="cq-step-desc">
-                {drone.nameZh}（{drone.model}）—— 不同版本配置和价格不同
+                {L(drone.nameZh, drone.nameEn)} ({drone.model}){t.step1DescSuffix}
               </p>
               <div className="cq-list">
                 {drone.skus.map((s) => {
                   const active = s.id === skuId;
-                  const includes = parseStringArray(s.includesZh);
+                  const includes = parseStringArray(locale === "zh" ? s.includesZh : (s as any).includesEn || s.includesZh);
                   return (
                     <button
                       key={s.id}
@@ -300,10 +411,10 @@ export default function CustomerQuoteBuilder({
                           </div>
                           <div>
                             <div className="cq-sku-name">
-                              {s.labelZh || s.name}
-                              {s.isDefault && <span className="cq-tag">默认</span>}
+                              {L(s.labelZh || s.name, s.labelEn || s.nameEn)}
+                              {s.isDefault && <span className="cq-tag">{t.defaultTag}</span>}
                             </div>
-                            {s.descZh && <div className="cq-sku-desc">{s.descZh}</div>}
+                            {s.descZh && <div className="cq-sku-desc">{L(s.descZh, (s as any).descEn)}</div>}
                           </div>
                         </div>
                         <div className="cq-sku-price">{fmt(s.price)}</div>
@@ -314,7 +425,7 @@ export default function CustomerQuoteBuilder({
                             <li key={i}>{it}</li>
                           ))}
                           {includes.length > 6 && (
-                            <li className="cq-sku-more">…等 {includes.length} 项</li>
+                            <li className="cq-sku-more">{t.includesMore(includes.length)}</li>
                           )}
                         </ul>
                       )}
@@ -328,8 +439,8 @@ export default function CustomerQuoteBuilder({
           {/* ─── Step 2: 选择配件 ─── */}
           {step === 2 && hasAccessories && (
             <section className="cq-step-content">
-              <h2 className="cq-step-title">选配配件</h2>
-              <p className="cq-step-desc">可多选；如不需要直接点"下一步"</p>
+              <h2 className="cq-step-title">{t.step2Title}</h2>
+              <p className="cq-step-desc">{t.step2Desc}</p>
               <div className="cq-list">
                 {availableAccessories.map((a) => {
                   const sel = accs.find((x) => x.id === a.id);
@@ -341,15 +452,15 @@ export default function CustomerQuoteBuilder({
                         <div className="cq-acc-image">
                           {a.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={a.imageUrl} alt={a.nameZh} />
+                            <img src={a.imageUrl} alt={L(a.nameZh, (a as any).nameEn)} />
                           ) : (
                             <span className="cq-img-fallback">📦</span>
                           )}
                         </div>
                         <div className="cq-acc-info">
                           <div className="cq-acc-name">
-                            {a.nameZh}
-                            {a.isRecommended && <span className="cq-tag-warm">推荐</span>}
+                            {L(a.nameZh, (a as any).nameEn)}
+                            {a.isRecommended && <span className="cq-tag-warm">{t.recommendedTag}</span>}
                           </div>
                           <div className="cq-acc-model">{a.model}</div>
                           <div className="cq-acc-price">{fmt(currentPrice)}</div>
@@ -360,10 +471,10 @@ export default function CustomerQuoteBuilder({
                               <button type="button" onClick={() => updateQty(a.id, -1)} className="cq-qty-btn">−</button>
                               <span className="cq-qty-num">{sel.qty}</span>
                               <button type="button" onClick={() => updateQty(a.id, 1)} className="cq-qty-btn">+</button>
-                              <button type="button" onClick={() => toggleAcc(a.id)} className="cq-remove">移除</button>
+                              <button type="button" onClick={() => toggleAcc(a.id)} className="cq-remove">{t.btnRemove}</button>
                             </div>
                           ) : (
-                            <button type="button" onClick={() => toggleAcc(a.id)} className="cq-add-btn">添加</button>
+                            <button type="button" onClick={() => toggleAcc(a.id)} className="cq-add-btn">{t.btnAdd}</button>
                           )}
                         </div>
                       </div>
@@ -371,7 +482,7 @@ export default function CustomerQuoteBuilder({
                       {/* 已选 + 该配件有 SKU 变体 → 显示版本选择 */}
                       {sel && hasVariants && (
                         <div className="cq-acc-skus">
-                          <div className="cq-acc-skus-label">配置版本</div>
+                          <div className="cq-acc-skus-label">{t.accSkuLabel}</div>
                           <div className="cq-acc-skus-list">
                             {a.skus!.map((s) => {
                               const skuActive = sel.skuId === s.id;
@@ -383,10 +494,10 @@ export default function CustomerQuoteBuilder({
                                   className={`cq-acc-sku ${skuActive ? "active" : ""}`}
                                 >
                                   <div className="cq-acc-sku-name">
-                                    {s.labelZh || s.name}
-                                    {s.isDefault && <span className="cq-tag">默认</span>}
+                                    {L(s.labelZh || s.name, s.labelEn || s.nameEn)}
+                                    {s.isDefault && <span className="cq-tag">{t.defaultTag}</span>}
                                   </div>
-                                  {s.descZh && <div className="cq-acc-sku-desc">{s.descZh}</div>}
+                                  {s.descZh && <div className="cq-acc-sku-desc">{L(s.descZh, (s as any).descEn)}</div>}
                                   <div className="cq-acc-sku-price">{fmt(s.price)}</div>
                                 </button>
                               );
@@ -404,33 +515,33 @@ export default function CustomerQuoteBuilder({
           {/* ─── Step 3: 确认提交 ─── */}
           {step === 3 && (
             <section className="cq-step-content">
-              <h2 className="cq-step-title">确认报价信息</h2>
-              <p className="cq-step-desc">提交后将生成正式报价单，此邀请码将不能再次使用</p>
+              <h2 className="cq-step-title">{t.step3Title}</h2>
+              <p className="cq-step-desc">{t.step3Desc}</p>
 
               <div className="cq-review">
                 <div className="cq-review-block">
-                  <div className="cq-review-label">客户信息</div>
-                  <div className="cq-review-row"><span>客户</span><span className="cq-strong">{invite.clientName}</span></div>
+                  <div className="cq-review-label">{t.reviewClientTitle}</div>
+                  <div className="cq-review-row"><span>{t.reviewClientRef}</span><span className="cq-strong">{invite.clientName}</span></div>
                   {invite.clientContact && (
-                    <div className="cq-review-row"><span>联系人</span><span>{invite.clientContact}</span></div>
+                    <div className="cq-review-row"><span>{t.reviewContact}</span><span>{invite.clientContact}</span></div>
                   )}
                   {invite.clientEmail && (
-                    <div className="cq-review-row"><span>邮箱</span><span>{invite.clientEmail}</span></div>
+                    <div className="cq-review-row"><span>{t.reviewEmail}</span><span>{invite.clientEmail}</span></div>
                   )}
                 </div>
 
                 <div className="cq-review-block">
-                  <div className="cq-review-label">报价参数</div>
-                  <div className="cq-review-row"><span>币种</span><span>{invite.currency}</span></div>
-                  <div className="cq-review-row"><span>贸易条款</span><span>{invite.deliveryTerms}</span></div>
-                  <div className="cq-review-row"><span>有效期</span><span>{invite.validDays} 天</span></div>
+                  <div className="cq-review-label">{t.reviewTermsTitle}</div>
+                  <div className="cq-review-row"><span>{t.reviewCurrency}</span><span>{invite.currency}</span></div>
+                  <div className="cq-review-row"><span>{t.reviewDelivery}</span><span>{invite.deliveryTerms}</span></div>
+                  <div className="cq-review-row"><span>{t.reviewValid}</span><span>{invite.validDays}{t.reviewValidDays}</span></div>
                 </div>
 
                 <div className="cq-review-block">
-                  <div className="cq-review-label">您的选择</div>
+                  <div className="cq-review-label">{t.reviewSelectionTitle}</div>
                   {drone && (
                     <div className="cq-review-row">
-                      <span>{drone.nameZh}{sku ? ` · ${sku.labelZh || sku.name}` : ""}</span>
+                      <span>{L(drone.nameZh, drone.nameEn)}{sku ? ` · ${L(sku.labelZh || sku.name, sku.labelEn || sku.nameEn)}` : ""}</span>
                       <span className="cq-strong">{fmt(mainPrice)}</span>
                     </div>
                   )}
@@ -442,8 +553,8 @@ export default function CustomerQuoteBuilder({
                     return (
                       <div key={a.id} className="cq-review-row">
                         <span>
-                          {p.nameZh}
-                          {accSku ? ` · ${accSku.labelZh || accSku.name}` : ""} ×{a.qty}
+                          {L(p.nameZh, (p as any).nameEn)}
+                          {accSku ? ` · ${L(accSku.labelZh || accSku.name, accSku.labelEn || accSku.nameEn)}` : ""} ×{a.qty}
                         </span>
                         <span>{fmt(unit * a.qty)}</span>
                       </div>
@@ -451,21 +562,21 @@ export default function CustomerQuoteBuilder({
                   })}
                   {accs.length === 0 && (
                     <div className="cq-review-row" style={{ color: "#9ca3af" }}>
-                      <span>未选配件</span><span>—</span>
+                      <span>{t.reviewNoAcc}</span><span>—</span>
                     </div>
                   )}
                 </div>
 
                 <div className="cq-review-totals">
-                  <div className="cq-tot-row"><span>小计</span><span>{fmt(subtotal)}</span></div>
+                  <div className="cq-tot-row"><span>{t.reviewSubtotal}</span><span>{fmt(subtotal)}</span></div>
                   {invite.discount > 0 && (
                     <div className="cq-tot-row cq-tot-discount">
-                      <span>专属折扣 ({invite.discount}%)</span>
+                      <span>{t.reviewDiscount(invite.discount)}</span>
                       <span>− {fmt(subtotal * invite.discount / 100)}</span>
                     </div>
                   )}
                   <div className="cq-tot-grand">
-                    <span>含税总金额</span>
+                    <span>{t.reviewTotal}</span>
                     <span className="cq-tot-amount">{fmt(total)}</span>
                   </div>
                 </div>
@@ -481,7 +592,7 @@ export default function CustomerQuoteBuilder({
           scope="invite"
           scopeKey={invite.code}
           initialMessages={aiInitialMessages}
-          greeting={`您好 ${invite.clientName}！我是您的 AI 选购助手。如对机型、配置或配件不熟悉，可以随时问我，例如使用场景、载重需求、续航要求等，我会帮您挑选最合适的方案。`}
+          greeting={t.aiGreeting.replace("{name}", invite.clientName)}
           fabBottom={88}
         />
 
@@ -494,7 +605,7 @@ export default function CustomerQuoteBuilder({
               disabled={step === 0}
               className="cq-btn cq-btn-prev"
             >
-              上一步
+              {t.btnPrev}
             </button>
             {step < 3 ? (
               <button
@@ -503,7 +614,7 @@ export default function CustomerQuoteBuilder({
                 className="cq-btn cq-btn-next"
                 disabled={(step === 0 && !droneId) || (step === 1 && !skuId)}
               >
-                下一步
+                {t.btnNext}
               </button>
             ) : (
               <button
@@ -512,7 +623,7 @@ export default function CustomerQuoteBuilder({
                 disabled={loading}
                 className="cq-btn cq-btn-submit"
               >
-                {loading ? "提交中..." : "确认并生成报价单"}
+                {loading ? t.btnSubmitLoad : t.btnSubmit}
               </button>
             )}
           </div>
@@ -535,6 +646,25 @@ const styles = `
   button { font-family: inherit; }
 
   /* ── 顶部 ── */
+
+  .lang-switch {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f5f5f2;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 20;
+  }
+  .lang-switch:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
   .cq-header {
     background: #1f2937;
     color: #fff;

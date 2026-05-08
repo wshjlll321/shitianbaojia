@@ -40,8 +40,9 @@ export async function GET(
     // Generate a simple HTML-based PDF using inline styles
     const title = isZh ? quote.titleZh : (quote.titleEn || quote.titleZh);
     const mainItem = quote.items.find((i) => i.isMainItem) ?? quote.items[0] ?? null;
+    const allSkus = quote.items.map(i => i.sku).filter(Boolean);
     const identityLine = escapeHtml(
-      describeQuoteWithTitle(isZh ? 'zh' : 'en', quote.titleZh, quote.titleEn, mainItem as any, []),
+      describeQuoteWithTitle(isZh ? 'zh' : 'en', quote.titleZh, quote.titleEn, mainItem as any, allSkus as any),
     );
 
     const itemRows = quote.items.map(item => {

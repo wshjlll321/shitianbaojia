@@ -696,6 +696,9 @@ export default function QuoteDocument({
                 <View style={[s.colDesc, s.tdDescWrap]}>
                   <Txt style={item.isMainItem ? s.tdDescMain : s.tdDesc}>
                     {L(item.nameZh, item.nameEn)}
+                    {!item.isMainItem && item.skuId && skus ? (
+                      ` · ${(skus.find((sku: any) => sku.id === item.skuId) as any)?.[isEn ? 'labelEn' : 'labelZh'] || (skus.find((sku: any) => sku.id === item.skuId) as any)?.[isEn ? 'nameEn' : 'name'] || item.skuName}`
+                    ) : ''}
                   </Txt>
                   {item.isMainItem && meta ? <Txt style={s.tdSub}>{meta}</Txt> : null}
                 </View>

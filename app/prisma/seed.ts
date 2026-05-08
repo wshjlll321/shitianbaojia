@@ -180,51 +180,78 @@ async function main() {
   });
   console.log('✅ Product created:', h15.model);
 
-  const v50 = await prisma.product.upsert({
-    where: { model: 'V50' },
+  const h60 = await prisma.product.upsert({
+    where: { model: 'H60' },
     update: {},
     create: {
-      model: 'V50',
-      nameZh: 'V50 垂直起降固定翼无人机',
-      nameEn: 'V50 VTOL Fixed-Wing UAV',
+      model: 'H60',
+      nameZh: 'H60 电动无人植保机',
+      nameEn: 'H60 Electric UAV Plant Protection Machine',
       nameTh: '',
       category: 'drone',
-      imageUrl: '/images/drone-v50.jpg',
+      imageUrl: '',
       featuresZh: JSON.stringify([
-        '垂直起降固定翼',
-        '超长航程200km',
-        '航时180分钟',
-        '高精度测绘',
+        '超高性价比电动植保无人机',
+        '55L药箱/80L撒播箱模块化切换',
+        '折叠臂架碳纤维+航空铝结构',
+        '新一代农业智能飞控系统',
+        '1080P FPV云台相机',
+        '三向雷达避障系统',
+        'IP67防水防尘',
+        '10分钟快充（三相交流电）',
+        '高亮照明灯支持夜间作业',
+        'AB点记忆/自主地块规划/断点续飞',
       ]),
       featuresEn: JSON.stringify([
-        'Vertical takeoff & landing',
-        '200km ultra-long range',
-        '180-minute endurance',
-        'High-precision mapping',
+        'Ultra cost-effective electric crop-spraying drone',
+        '55L liquid tank / 80L granular tank modular swap',
+        'Foldable carbon fiber + aviation aluminum arm truss',
+        'New-gen agricultural intelligent flight control',
+        '1080P FPV gimbal camera',
+        'Three-way radar obstacle avoidance',
+        'IP67 waterproof and dustproof',
+        '10-min fast charge (3-phase AC)',
+        'High-brightness spotlights for night ops',
+        'AB point memory / autonomous field planning / breakpoint resume',
       ]),
+      featuresTh: '[]',
       specsZh: JSON.stringify({
-        '最大起飞重量': '50 kg',
-        '有效载荷': '12 kg',
-        '续航时间': '180 min',
-        '最大航程': '200 km',
-        '巡航速度': '90 km/h',
-        '翼展': '4200 mm',
+        '展开尺寸': '3060 × 3050 × 860 mm（含桨）',
+        '运输尺寸': '1110 × 850 × 860 mm',
+        '最大起飞重量': '106 kg',
+        '药箱容量': '55 L（液体）/ 80 L（颗粒）',
+        '最大流量': '20 L/min（双叶轮泵）',
+        '喷幅': '8-12 m',
+        '喷嘴类型': '高精度离心喷嘴（50-500μm雾滴）',
+        '作业效率': '3.3公顷/架次 / 20公顷/小时',
+        '电池规格': '18S 30000mAh',
+        '充电时间': '10分钟快充（三相交流电）',
+        '防护等级': 'IP67',
+        '导航系统': 'GPS + RTK（厘米级定位）',
+        '仿地精度': '≤0.5 m',
       }),
       specsEn: JSON.stringify({
-        'Max Takeoff Weight': '50 kg',
-        'Payload': '12 kg',
-        'Endurance': '180 min',
-        'Max Range': '200 km',
-        'Cruise Speed': '90 km/h',
-        'Wingspan': '4200 mm',
+        'Dimensions (Operating)': '3060 × 3050 × 860 mm (incl. propellers)',
+        'Dimensions (Transport)': '1110 × 850 × 860 mm',
+        'Max Takeoff Weight': '106 kg',
+        'Tank Capacity': '55 L (liquid) / 80 L (granular)',
+        'Max Flow Rate': '20 L/min (dual impeller pump)',
+        'Spraying Width': '8-12 m',
+        'Nozzle Type': 'High-precision centrifugal (50-500μm droplet)',
+        'Efficiency': '3.3 hectares/mission / 20 hectares/hour',
+        'Battery': '18S 30000mAh',
+        'Charging': '10-min fast charge (3-phase AC)',
+        'Protection Rating': 'IP67',
+        'Navigation': 'GPS + RTK (centimeter-level)',
+        'Terrain Tracing': '≤0.5 m accuracy',
       }),
-      msrp: 580000,
-      exwPrice: 420000,
-      fobPrice: 458000,
+      msrp: 168000,
+      exwPrice: 128000,
+      fobPrice: 138000,
       sortOrder: 3,
     },
   });
-  console.log('✅ Product created:', v50.model);
+  console.log('✅ Product created:', h60.model);
 
   // ========== Create Accessories ==========
   const gimbal = await prisma.product.upsert({
@@ -427,17 +454,32 @@ async function main() {
   });
 
   await prisma.sKU.upsert({
-    where: { sku: 'V50-STD' },
+    where: { sku: 'H60-STD' },
     update: {},
     create: {
-      productId: v50.id,
+      productId: h60.id,
       name: '标准版',
       nameEn: 'Standard Edition',
-      sku: 'V50-STD',
-      price: 420000,
-      descZh: '含主机、弹射架、地面站',
-      descEn: 'Includes aircraft, launcher, ground station',
+      sku: 'H60-STD',
+      price: 128000,
+      descZh: '含主机、2组电池、充电器、55L药箱、遥控器',
+      descEn: 'Includes aircraft, 2 battery sets, charger, 55L tank, remote controller',
       isDefault: true,
+    },
+  });
+
+  await prisma.sKU.upsert({
+    where: { sku: 'H60-PRO' },
+    update: {},
+    create: {
+      productId: h60.id,
+      name: '专业版',
+      nameEn: 'Professional Edition',
+      sku: 'H60-PRO',
+      price: 168000,
+      descZh: '含标准版全部 + 80L撒播箱 + RTK模块 + 额外2组电池',
+      descEn: 'All Standard + 80L granular tank + RTK Module + 2 extra battery sets',
+      isDefault: false,
     },
   });
 
@@ -451,8 +493,9 @@ async function main() {
     { mainProductId: t280.id, accessoryId: multispectral.id, isRecommended: false },
     { mainProductId: h15.id, accessoryId: gimbal.id, isRecommended: false },
     { mainProductId: h15.id, accessoryId: multispectral.id, isRecommended: true },
-    { mainProductId: v50.id, accessoryId: multispectral.id, isRecommended: true },
-    { mainProductId: v50.id, accessoryId: datalink.id, isRecommended: true },
+    { mainProductId: h60.id, accessoryId: multispectral.id, isRecommended: true },
+    { mainProductId: h60.id, accessoryId: datalink.id, isRecommended: false },
+
   ];
 
   for (const assoc of accessoryAssociations) {

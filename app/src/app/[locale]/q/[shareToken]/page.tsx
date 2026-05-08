@@ -110,12 +110,10 @@ export default async function QuotePage({
 
   const selectedSkuId: string = (mainItem as any)?.skuId || '';
 
-  const skus = mainProduct?.id
-    ? await prisma.sKU.findMany({
-        where: { productId: mainProduct.id },
-        orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
-      })
-    : [];
+  const productIds = quote.items.map((i) => i.productId);
+  const skus = await prisma.sKU.findMany({
+    where: { productId: { in: productIds } },
+  });
 
   const L = (zh: string, en: string) => {
     if (locale === 'en') return en || zh;
@@ -534,10 +532,14 @@ export default async function QuotePage({
                       color: item.isMainItem ? '#0f172a' : '#475569',
                     }}>
                       <div>{L(item.nameZh, item.nameEn)}</div>
-                      {item.isMainItem && mainProduct?.model ? (
+                      {(item.isMainItem && mainProduct?.model) || (!item.isMainItem && item.skuId) ? (
                         <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 500, marginTop: '4px' }}>
-                          {mainProduct.model}
-                          {item.skuName ? ` · SKU：${item.skuName}` : ''}
+                          {item.isMainItem && mainProduct?.model ? mainProduct.model : ''}
+                          {item.skuId ? `${item.isMainItem && mainProduct?.model ? ' · ' : ''}${locale === 'en' ? 'SKU: ' : 'SKU：'}${
+                            (skus.find(s => s.id === item.skuId) as any)?.[locale === 'en' ? 'labelEn' : 'labelZh'] || 
+                            (skus.find(s => s.id === item.skuId) as any)?.[locale === 'en' ? 'nameEn' : 'name'] || 
+                            item.skuName
+                          }` : ''}
                         </div>
                       ) : null}
                     </td>

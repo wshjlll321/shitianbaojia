@@ -104,12 +104,10 @@ export async function GET(
       mainProduct?.imageUrl ||
       '';
 
-    const skus = mainProduct?.id
-      ? await prisma.sKU.findMany({
-          where: { productId: mainProduct.id },
-          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
-        })
-      : [];
+    const productIds = quote.items.map((i) => i.productId);
+    const skus = await prisma.sKU.findMany({
+      where: { productId: { in: productIds } },
+    });
 
     const [logoSrc, productImageSrc, sealSrc] = await Promise.all([
       companyLogoUrl ? resolveImageForPdf(companyLogoUrl) : Promise.resolve(''),
