@@ -65,7 +65,7 @@ async function main() {
       nameEn: 'T280 Heavy-Lift Unmanned Helicopter',
       nameTh: '',
       category: 'drone',
-      imageUrl: '/images/drone-t280.jpg',
+      imageUrl: 'https://cdn-quote.shitianuav.com/uploads/old-drone-1.png',
       featuresZh: JSON.stringify([
         '最大起飞重量280kg',
         '长航时120分钟',
@@ -128,7 +128,7 @@ async function main() {
       nameEn: 'H15 Electric Unmanned Helicopter',
       nameTh: '',
       category: 'drone',
-      imageUrl: '/images/drone-h15.png',
+      imageUrl: 'https://cdn-quote.shitianuav.com/uploads/old-drone-4.png',
       featuresZh: JSON.stringify([
         '纯电动零排放',
         '长航时50分钟',
@@ -189,7 +189,7 @@ async function main() {
       nameEn: 'H60 Electric UAV Plant Protection Machine',
       nameTh: '',
       category: 'drone',
-      imageUrl: '',
+      imageUrl: 'https://cdn-quote.shitianuav.com/uploads/old-drone-3.png',
       featuresZh: JSON.stringify([
         '超高性价比电动植保无人机',
         '55L药箱/80L撒播箱模块化切换',
@@ -263,7 +263,7 @@ async function main() {
       nameEn: 'SIYI ZR30 Electro-Optical Gimbal Pod',
       nameTh: '',
       category: 'accessory',
-      imageUrl: '/images/gimbal.svg',
+      imageUrl: 'https://cdn-quote.shitianuav.com/images/gimbal.svg',
       featuresZh: JSON.stringify(['30倍光学变焦', '红外热成像', '三轴稳定']),
       featuresEn: JSON.stringify(['30x Optical Zoom', 'Infrared Thermal', '3-Axis Stabilization']),
       specsZh: JSON.stringify({
@@ -297,7 +297,7 @@ async function main() {
       nameEn: '100KM Long-Range Data Link System',
       nameTh: '',
       category: 'accessory',
-      imageUrl: '/images/datalink.svg',
+      imageUrl: 'https://cdn-quote.shitianuav.com/images/datalink.svg',
       featuresZh: JSON.stringify(['100km超远距离', '高清图传', 'AES-256加密']),
       featuresEn: JSON.stringify(['100km Ultra-long Range', 'HD Video Transmission', 'AES-256 Encryption']),
       specsZh: JSON.stringify({
@@ -333,7 +333,7 @@ async function main() {
       nameEn: '6-Band Multispectral Camera',
       nameTh: '',
       category: 'accessory',
-      imageUrl: '/images/multispectral.svg',
+      imageUrl: 'https://cdn-quote.shitianuav.com/images/multispectral.svg',
       featuresZh: JSON.stringify(['6通道多光谱', 'NDVI实时成像', '农业精准监测']),
       featuresEn: JSON.stringify(['6-Band Multispectral', 'NDVI Real-time Imaging', 'Precision Agriculture']),
       specsZh: JSON.stringify({
@@ -367,7 +367,7 @@ async function main() {
       nameEn: 'Automatic Parachute Recovery System',
       nameTh: '',
       category: 'accessory',
-      imageUrl: '/images/parachute.svg',
+      imageUrl: 'https://cdn-quote.shitianuav.com/images/parachute.svg',
       featuresZh: JSON.stringify(['全自动弹射', '自主检测故障', '适配280kg级']),
       featuresEn: JSON.stringify(['Auto Deploy', 'Autonomous Fault Detection', 'For 280kg class']),
       specsZh: JSON.stringify({
@@ -658,7 +658,12 @@ async function main() {
   await prisma.systemConfig.upsert({
     where: { key: 'company_logo' },
     update: {},
-    create: { key: 'company_logo', value: '' },
+    create: { key: 'company_logo', value: 'https://cdn-quote.shitianuav.com/uploads/logo.png' },
+  });
+  await prisma.systemConfig.upsert({
+    where: { key: 'company_seal' },
+    update: {},
+    create: { key: 'company_seal', value: 'https://cdn-quote.shitianuav.com/uploads/seal.png' },
   });
   await prisma.systemConfig.upsert({
     where: { key: 'company_name' },

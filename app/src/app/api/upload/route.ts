@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import OSS from 'ali-oss';
 import { auth } from '@/lib/auth';
 
 export async function POST(request: Request) {
@@ -23,22 +21,34 @@ export async function POST(request: Request) {
     // Create unique filename
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const extension = file.name.split('.').pop();
-    const filename = `product-${uniqueSuffix}.${extension}`;
+    const filename = `uploads/product-${uniqueSuffix}.${extension}`;
 
-    // Define upload directory
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    
-    // Create directory if it doesn't exist
-    if (!existsSync(uploadDir)) {
-      mkdirSync(uploadDir, { recursive: true });
+    // Ensure required env vars are set
+    if (!process.env.OSS_REGION || !process.env.OSS_ACCESS_KEY_ID || !process.env.OSS_ACCESS_KEY_SECRET || !process.env.OSS_BUCKET) {
+      console.error('Missing Aliyun OSS environment variables');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
-    // Save the file
-    const path = join(uploadDir, filename);
-    await writeFile(path, buffer);
+    // Initialize OSS client
+    const client = new OSS({
+      region: process.env.OSS_REGION,
+      accessKeyId: process.env.OSS_ACCESS_KEY_ID,
+      accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
+      bucket: process.env.OSS_BUCKET,
+    });
 
-    // Return the relative URL to be saved in database
-    return NextResponse.json({ url: `/uploads/${filename}` });
+    // Upload to OSS
+    const result = await client.put(filename, buffer);
+
+    // Convert http to https for security if necessary, though ali-oss usually returns http by default depending on config
+    let finalUrl = result.url.replace(/^http:\/\//i, 'https://');
+    
+    if (process.env.OSS_CDN_DOMAIN) {
+      finalUrl = `https://${process.env.OSS_CDN_DOMAIN}/${filename}`;
+    }
+
+    // Return the full URL to be saved in database
+    return NextResponse.json({ url: finalUrl });
   } catch (error) {
     console.error('Upload Error:', error);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

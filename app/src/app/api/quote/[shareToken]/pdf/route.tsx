@@ -7,6 +7,7 @@ import React from 'react';
 import { renderToBuffer } from '@react-pdf/renderer';
 import QuoteDocument from '@/components/pdf/QuoteDocument';
 import { syncExpiredQuoteIfNeeded } from '@/lib/quoteStatus';
+import OSS from 'ali-oss';
 
 function sha256Base64Url(input: string) {
   return createHash('sha256').update(input, 'utf8').digest('base64url');
@@ -126,6 +127,39 @@ export async function GET(
         sealSrc={sealSrc || undefined}
       />
     );
+
+    // 如果配置了 OSS，则上传到 OSS 并重定向到 OSS 链接下载
+    if (process.env.OSS_REGION && process.env.OSS_ACCESS_KEY_ID && process.env.OSS_ACCESS_KEY_SECRET && process.env.OSS_BUCKET) {
+      try {
+        const client = new OSS({
+          region: process.env.OSS_REGION,
+          accessKeyId: process.env.OSS_ACCESS_KEY_ID,
+          accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
+          bucket: process.env.OSS_BUCKET,
+        });
+        
+        // 使用 shareToken 作为目录，防止被人通过 quoteNumber 猜出其他报价单
+        const filename = `quotes/${shareToken}/Quotation-${quote.quoteNumber}.pdf`;
+        
+        const result = await client.put(filename, Buffer.from(pdfBuffer), {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="Quotation-${quote.quoteNumber}.pdf"`,
+          }
+        });
+        
+        let secureUrl = result.url.replace(/^http:\/\//i, 'https://');
+        
+        if (process.env.OSS_CDN_DOMAIN) {
+          secureUrl = `https://${process.env.OSS_CDN_DOMAIN}/${filename}`;
+        }
+        
+        return NextResponse.redirect(secureUrl);
+      } catch (ossError) {
+        console.error('Failed to upload PDF to OSS, falling back to local stream:', ossError);
+        // 如果上传失败，降级使用直接返回文件流的方式
+      }
+    }
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {

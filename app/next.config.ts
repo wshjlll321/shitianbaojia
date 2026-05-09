@@ -9,8 +9,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
+      { protocol: 'http', hostname: '**' },
     ],
   },
+  serverExternalPackages: ['ali-oss'],
 };
 
 export default withNextIntl(nextConfig);
