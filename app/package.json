@@ -43,6 +43,7 @@
     "tsx": "^4.21.0"
   },
   "devDependencies": {
+    "@types/ali-oss": "^6.16.11",
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/jsonwebtoken": "^9.0.10",
