@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['ali-oss'],
+  output: 'standalone',
 };
 
 export default withNextIntl(nextConfig);

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  quote-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quote-system
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      # 把 SQLite 数据库路径指向上方映射的持久化数据卷，避免重启丢失数据
+      - DATABASE_URL=file:/app/data/dev.db
+      # 以下配置请改成正式环境的配置：
+      - AUTH_SECRET=shytian-aviation-quote-secret-production-key
+      - AUTH_URL=http://你的服务器IP或正式域名:3000
+      - NEXT_PUBLIC_APP_URL=http://你的服务器IP或正式域名:3000
+      - PUBLIC_APP_URL=http://你的服务器IP或正式域名:3000
+      # AI 及 OSS 配置会自动从你代码中的 .env 读取并打包
