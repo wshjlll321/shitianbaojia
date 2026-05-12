@@ -72,7 +72,7 @@ const DICT = {
     networkErr: "网络错误",
     defaultTag: "默认",
     recommendedTag: "推荐",
-    includesMore: (n) => `…等 ${n} 项`,
+    includesMore: (n: number) => `…等 ${n} 项`,
     btnRemove: "移除",
     btnAdd: "添加",
     accSkuLabel: "配置版本",
