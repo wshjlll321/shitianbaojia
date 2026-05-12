@@ -6,9 +6,13 @@ import AiChat from "@/components/AiChat";
 type Sku = {
   id: string;
   name: string;
+  nameEn?: string | null;
   labelZh: string | null;
+  labelEn?: string | null;
   descZh?: string | null;
+  descEn?: string | null;
   includesZh?: string | null; // JSON Array string
+  includesEn?: string | null;
   price: number;
   isDefault: boolean;
 };
@@ -17,6 +21,7 @@ type Accessory = {
   id: string;
   model: string;
   nameZh: string;
+  nameEn?: string | null;
   imageUrl: string;
   msrp: number;
   fobPrice: number;
@@ -88,7 +93,7 @@ const DICT = {
     reviewSelectionTitle: "您的选择",
     reviewNoAcc: "未选配件",
     reviewSubtotal: "小计",
-    reviewDiscount: (d) => `专属折扣 (${d}%)`,
+    reviewDiscount: (d: number) => `专属折扣 (${d}%)`,
     reviewTotal: "含税总金额",
     btnPrev: "{t.btnPrev}",
     btnNext: "{t.btnNext}",
@@ -119,7 +124,7 @@ const DICT = {
     networkErr: "Network error",
     defaultTag: "Default",
     recommendedTag: "Recommended",
-    includesMore: (n) => `...and ${n} more items`,
+    includesMore: (n: number) => `...and ${n} more items`,
     btnRemove: "Remove",
     btnAdd: "Add",
     accSkuLabel: "Version",
@@ -135,7 +140,7 @@ const DICT = {
     reviewSelectionTitle: "Your Selection",
     reviewNoAcc: "No accessories selected",
     reviewSubtotal: "Subtotal",
-    reviewDiscount: (d) => `Special Discount (${d}%)`,
+    reviewDiscount: (d: number) => `Special Discount (${d}%)`,
     reviewTotal: "GRAND TOTAL (INCL. TAX)",
     btnPrev: "Previous",
     btnNext: "Next",

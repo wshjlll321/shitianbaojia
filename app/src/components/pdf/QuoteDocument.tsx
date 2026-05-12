@@ -36,13 +36,13 @@ Font.register({
 Font.registerHyphenationCallback((word) => [word]);
 
 // 微软雅黑含完整中文 + Latin glyphs，所有文本统一用它，无需混合 Helvetica。
-type TxtProps = React.ComponentProps<typeof Text>;
+type TxtProps = React.ComponentProps<typeof Text> & { children?: React.ReactNode; render?: (props: any) => string | number | null };
 const Txt = ({ children, render, style, ...rest }: TxtProps) => {
   if (render) {
     return (
       <Text
         {...rest}
-        style={[style, { fontFamily: 'MicrosoftYaHei' }]}
+        style={[style as any, { fontFamily: 'MicrosoftYaHei' }]}
         render={(p: any) => {
           const txt = (render as any)(p);
           return txt == null ? '' : String(txt);
@@ -51,7 +51,7 @@ const Txt = ({ children, render, style, ...rest }: TxtProps) => {
     );
   }
   return (
-    <Text {...rest} style={[style, { fontFamily: 'MicrosoftYaHei' }]}>
+    <Text {...rest} style={[style as any, { fontFamily: 'MicrosoftYaHei' }]}>
       {children as React.ReactNode}
     </Text>
   );
