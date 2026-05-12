@@ -8,8 +8,8 @@ WORKDIR /app
 # 替换为阿里云镜像源以解决国内服务器卡死的问题
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true && \
     sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
-# 安装 prisma 依赖包
-RUN apt-get update -y && apt-get install -y openssl
+# 安装编译依赖包（better-sqlite3 在没有预编译包时需要 python3, make 和 g++ 进行源码编译）
+RUN apt-get update -y && apt-get install -y openssl python3 make g++
 
 # 复制 package.json 和锁文件
 COPY package.json package-lock.json ./
