@@ -1,5 +1,5 @@
 # 使用官方的 Node.js 轻量级镜像 (使用 slim 避免 better-sqlite3 在 alpine 下的编译报错)
-FROM node:20-slim AS base
+FROM node:22-slim AS base
 
 # 阶段一：安装依赖
 FROM base AS deps
