@@ -13,8 +13,8 @@ RUN apt-get update -y && apt-get install -y openssl
 
 # 复制 package.json 和锁文件
 COPY package.json package-lock.json ./
-# 安装依赖
-RUN npm install
+# 设置淘宝/阿里云 npm 镜像源解决国内网络超时断开的问题
+RUN npm config set registry https://registry.npmmirror.com && npm install
 
 # 阶段二：构建阶段
 FROM base AS builder
