@@ -8,7 +8,7 @@ services:
     container_name: quote-system
     restart: always
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./data:/app/data
     environment:
@@ -16,7 +16,7 @@ services:
       - DATABASE_URL=file:/app/data/dev.db
       # 以下配置请改成正式环境的配置：
       - AUTH_SECRET=shytian-aviation-quote-secret-production-key
-      - AUTH_URL=http://你的服务器IP或正式域名:3000
-      - NEXT_PUBLIC_APP_URL=http://你的服务器IP或正式域名:3000
-      - PUBLIC_APP_URL=http://你的服务器IP或正式域名:3000
+      - AUTH_URL=https://quote.shitianuav.com
+      - NEXT_PUBLIC_APP_URL=https://quote.shitianuav.com
+      - PUBLIC_APP_URL=https://quote.shitianuav.com
       # AI 及 OSS 配置会自动从你代码中的 .env 读取并打包
