@@ -8,7 +8,7 @@ services:
     container_name: quote-system
     restart: always
     ports:
-      - "3000:3000"
+      - "18563:3000"
     volumes:
       - ./data:/app/data
     environment:
