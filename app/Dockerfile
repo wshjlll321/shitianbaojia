@@ -5,7 +5,10 @@ FROM node:22-slim AS base
 FROM base AS deps
 WORKDIR /app
 
-# 安装 prisma 依赖包（如 openssl，部分基于 debian 的环境需要）
+# 替换为阿里云镜像源以解决国内服务器卡死的问题
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true && \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
+# 安装 prisma 依赖包
 RUN apt-get update -y && apt-get install -y openssl
 
 # 复制 package.json 和锁文件
@@ -16,6 +19,8 @@ RUN npm install
 # 阶段二：构建阶段
 FROM base AS builder
 WORKDIR /app
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true && \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
 RUN apt-get update -y && apt-get install -y openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -33,6 +38,8 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true && \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
