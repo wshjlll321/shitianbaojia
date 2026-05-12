@@ -11,7 +11,7 @@ RUN apt-get update -y && apt-get install -y openssl
 # 复制 package.json 和锁文件
 COPY package.json package-lock.json ./
 # 安装依赖
-RUN npm ci
+RUN npm install
 
 # 阶段二：构建阶段
 FROM base AS builder
