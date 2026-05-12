@@ -13,8 +13,14 @@ RUN apt-get update -y && apt-get install -y openssl
 
 # 复制 package.json 和锁文件
 COPY package.json package-lock.json ./
-# 设置淘宝/阿里云 npm 镜像源解决国内网络超时断开的问题
-RUN npm config set registry https://registry.npmmirror.com && npm install
+
+# 设置 Prisma 镜像源，防止从 GitHub 下载底层引擎卡死
+ENV PRISMA_ENGINES_MIRROR=https://npmmirror.com/mirrors/prisma
+
+# 删除 package-lock.json，防止它强制按记录的国外源下载，并设置淘宝源
+RUN rm -f package-lock.json && \
+    npm config set registry https://registry.npmmirror.com && \
+    npm install
 
 # 阶段二：构建阶段
 FROM base AS builder
