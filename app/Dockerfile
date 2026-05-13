@@ -5,9 +5,9 @@ FROM node:22-slim AS base
 FROM base AS deps
 WORKDIR /app
 
-# 替换为阿里云镜像源以解决国内服务器卡死的问题
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true && \
-    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
+# 替换为阿里云内网镜像源以解决国内服务器 DNS 解析卡死的问题
+RUN sed -i 's/deb.debian.org/mirrors.cloud.aliyuncs.com/g' /etc/apt/sources.list.d/debian.sources || true && \
+    sed -i 's/deb.debian.org/mirrors.cloud.aliyuncs.com/g' /etc/apt/sources.list || true
 # 安装编译依赖包（better-sqlite3 在没有预编译包时需要 python3, make 和 g++ 进行源码编译）
 RUN apt-get update -y && apt-get install -y openssl python3 make g++
 
@@ -25,8 +25,8 @@ RUN rm -f package-lock.json && \
 # 阶段二：构建阶段
 FROM base AS builder
 WORKDIR /app
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true && \
-    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
+RUN sed -i 's/deb.debian.org/mirrors.cloud.aliyuncs.com/g' /etc/apt/sources.list.d/debian.sources || true && \
+    sed -i 's/deb.debian.org/mirrors.cloud.aliyuncs.com/g' /etc/apt/sources.list || true
 RUN apt-get update -y && apt-get install -y openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -44,8 +44,8 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true && \
-    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
+RUN sed -i 's/deb.debian.org/mirrors.cloud.aliyuncs.com/g' /etc/apt/sources.list.d/debian.sources || true && \
+    sed -i 's/deb.debian.org/mirrors.cloud.aliyuncs.com/g' /etc/apt/sources.list || true
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
