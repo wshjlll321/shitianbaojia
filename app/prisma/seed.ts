@@ -8,8 +8,10 @@ function sha256Base64Url(input: string) {
   return createHash('sha256').update(input, 'utf8').digest('base64url');
 }
 
+const dbUrl = process.env.DATABASE_URL || `file:${path.join(process.cwd(), 'dev.db')}`;
+
 const adapter = new PrismaBetterSqlite3({
-  url: `file:${path.join(process.cwd(), 'dev.db')}`,
+  url: dbUrl,
 });
 
 const prisma = new PrismaClient({ adapter });
