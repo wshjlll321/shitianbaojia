@@ -58,6 +58,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./
 # 如果你有单独的脚本或配置需要保留，也可以 COPY 过来
 
 EXPOSE 3000
