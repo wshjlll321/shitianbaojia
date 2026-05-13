@@ -59,7 +59,13 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./
-# 如果你有单独的脚本或配置需要保留，也可以 COPY 过来
+COPY --from=builder /app/package.json ./package.json
+
+# Prisma 7 的 `prisma db push` 需要完整的 prisma CLI + dotenv + tsx（解析 prisma.config.ts）
+# standalone 打包不会自动带这些，需要在运行阶段额外安装
+ENV PRISMA_ENGINES_MIRROR=https://npmmirror.com/mirrors/prisma
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm install --no-save prisma dotenv tsx
 
 EXPOSE 3000
 ENV PORT 3000
