@@ -12,9 +12,14 @@ services:
       - "18563:3000"
     volumes:
       - ./data:/app/data
+    dns:
+      - 223.5.5.5
+      - 223.6.6.6
+      - 8.8.8.8
     env_file:
       - .env
     environment:
+      - NODE_OPTIONS=--dns-result-order=ipv4first
       # 把 SQLite 数据库路径指向上方映射的持久化数据卷，避免重启丢失数据
       - DATABASE_URL=file:/app/data/dev.db
       # 以下配置请改成正式环境的配置：
