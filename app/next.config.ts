@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['ali-oss'],
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['quote.shitianuav.com', '8.141.118.200', '8.141.118.200:18563'],
+    },
+  },
   output: 'standalone',
 };
 

@@ -18,6 +18,7 @@ services:
       # 以下配置请改成正式环境的配置：
       - AUTH_SECRET=shytian-aviation-quote-secret-production-key
       - AUTH_URL=https://quote.shitianuav.com
+      - AUTH_TRUST_HOST=true
       - NEXT_PUBLIC_APP_URL=https://quote.shitianuav.com
       - PUBLIC_APP_URL=https://quote.shitianuav.com
       # AI 及 OSS 配置会自动从你代码中的 .env 读取并打包

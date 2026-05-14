@@ -156,23 +156,53 @@ pm2 save
 pm2 startup
 ```
 
-### 方式三：Docker 部署
+### 方式三：Docker 部署（推荐）
 
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
+本项目已内置 `docker-compose.yml`，非常适合在服务器上一键部署。
 
-```bash
-docker build -t shytian-quote .
-docker run -d -p 3000:3000 --env-file .env --name shytian-quote shytian-quote
-```
+1. **上传代码到服务器**并进入 `app` 目录。
+2. **配置环境变量**：修改 `docker-compose.yml` 中的环境变量（数据库路径会自动映射，无需更改）。
+3. **启动服务**：
+   ```bash
+   docker-compose build quote-system
+   docker-compose up -d
+   ```
+
+---
+
+## 🛡️ 进阶：免备案域名部署方案（国内服务器 + 阿里云海外 CDN）
+
+如果你的服务器在国内，但域名**没有备案**，可以通过阿里云全站加速（DCDN）绕过机房防火墙的 80/443 端口拦截。
+
+### 1. 核心原理
+- 防火墙只拦截带有未备案域名的 HTTP/HTTPS 请求。
+- 通过配置 CDN 在回源时隐藏域名（将 `Host` 头替换为服务器 IP），使防火墙认为这是一次纯 IP 访问从而放行。
+
+### 2. 详细配置步骤
+
+**第一步：配置阿里云 DCDN**
+1. 在阿里云开通**全站加速 (DCDN)**。
+2. 添加域名，加速区域必须选择 **“全球（不包含中国内地）”**。
+3. 源站信息选择 **“IP”**，填入你的服务器公网 IP，端口填入 `docker-compose` 暴露的端口（如 `18563`）。
+
+**第二步：修改 CDN 回源 HOST**
+1. 在 CDN 控制台的“回源配置”中，找到“默认回源HOST”。
+2. 修改配置，选择 **“自定义域名”**，并强制填入你服务器的 **公网 IP 地址**。
+
+**第三步：配置 Next.js 和 NextAuth 信任代理**
+因为 CDN 修改了 `Host` 头，Next.js 的安全机制会触发 500 错误。必须在代码中做以下修改：
+1. **信任 NextAuth Host**：在 `docker-compose.yml` 中必须添加 `AUTH_TRUST_HOST=true`。
+2. **允许 Server Actions 跨域**：在 `next.config.ts` 中配置允许的 Origin：
+   ```typescript
+   experimental: {
+     serverActions: {
+       allowedOrigins: ['quote.shitianuav.com', '服务器IP', '服务器IP:端口'],
+     },
+   },
+   ```
+
+**第四步：清理缓存**
+每次重新打包 (`docker-compose build`) 后，**必须在 CDN 控制台执行“刷新预热”**，清理全站缓存，否则前端会报错 `UnrecognizedActionError`。
 
 ---
 
